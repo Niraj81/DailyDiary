@@ -14,6 +14,8 @@ import androidx.navigation.compose.rememberNavController
 import com.niraj.dailydiary.navigation.Screen
 import com.niraj.dailydiary.navigation.SetupNavGraph
 import com.niraj.dailydiary.ui.theme.DailyDiaryTheme
+import com.niraj.dailydiary.utils.Constants.APP_ID
+import io.realm.kotlin.mongodb.App
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +24,7 @@ class MainActivity : ComponentActivity() {
             DailyDiaryTheme {
                 val navController = rememberNavController()
                 SetupNavGraph(
-                    startDestination = Screen.Authentication.route,
+                    startDestination = getStartDestination(),
                     navController = rememberNavController()
                 )
             }
@@ -30,3 +32,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private fun getStartDestination() : String {
+    val user = App.create(APP_ID).currentUser
+    if(user != null && user.loggedIn) return Screen.Home.route
+    else return Screen.Authentication.route
+}

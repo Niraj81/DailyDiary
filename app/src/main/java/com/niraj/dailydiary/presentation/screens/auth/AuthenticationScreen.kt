@@ -6,6 +6,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.tooling.preview.Preview
 import com.niraj.dailydiary.utils.Constants.CLIENT_ID
 import com.stevdzasan.messagebar.ContentWithMessageBar
@@ -19,12 +20,14 @@ import java.lang.Exception
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthenticationScreen(
+    authenticated: Boolean,
     loadingState: Boolean,
     oneTapState: OneTapSignInState,
     messageBarState: MessageBarState,
     onButtonClicked: () -> Unit,
     onTokenReceived : (String) -> Unit,
-    onDialogDismised : (String) -> Unit
+    onDialogDismised : (String) -> Unit,
+    navigateToHome : () -> Unit
 ){
     Scaffold(
         content = {
@@ -48,4 +51,10 @@ fun AuthenticationScreen(
             onDialogDismised(message)
         }
     )
+
+    LaunchedEffect(key1 = authenticated){
+        if(authenticated){
+            navigateToHome()
+        }
+    }
 }

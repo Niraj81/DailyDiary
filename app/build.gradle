@@ -125,4 +125,6 @@ dependencies {
     // Desugar JDK
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.0'
 
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.28.0"
+
 }
