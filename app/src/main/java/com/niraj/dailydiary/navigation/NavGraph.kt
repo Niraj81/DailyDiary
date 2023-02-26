@@ -2,12 +2,8 @@ package com.niraj.dailydiary.navigation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -17,8 +13,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.niraj.dailydiary.presentation.components.DisplayAlertDialog
 import com.niraj.dailydiary.presentation.screens.auth.AuthenticationScreen
 import com.niraj.dailydiary.presentation.screens.auth.AuthenticationViewModel
+import com.niraj.dailydiary.presentation.screens.home.HomeScreen
 import com.niraj.dailydiary.utils.Constants.APP_ID
 import com.niraj.dailydiary.utils.Constants.WRITE_SCREEN_ARGUMENT_KEY
 import com.stevdzasan.messagebar.rememberMessageBarState
@@ -26,6 +24,7 @@ import com.stevdzasan.onetap.rememberOneTapSignInState
 import io.realm.kotlin.mongodb.App
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.Exception
 
 @Composable
@@ -37,7 +36,15 @@ fun SetupNavGraph(startDestination : String, navController: NavHostController){
                 navController.navigate(Screen.Home.route)
             }
         )
-        homeRoute()
+        homeRoute(
+            navigateToWrite = {
+                navController.navigate(Screen.Write.route)
+            },
+            navigateToAuth = {
+                navController.popBackStack()
+                navController.navigate(Screen.Authentication.route)
+            }
+        )
         writeRoute()
     }
 }
@@ -85,21 +92,48 @@ fun NavGraphBuilder.authenticationRoute(
     }
 }
 
-fun NavGraphBuilder.homeRoute(){
+fun NavGraphBuilder.homeRoute(
+    navigateToWrite : () -> Unit,
+    navigateToAuth : () -> Unit
+){
     composable(route = Screen.Home.route){
         val scope = rememberCoroutineScope()
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(onClick = {
-                scope.launch(Dispatchers.IO) {
-                    App.create(APP_ID).currentUser?.logOut()
-                }
-            }) {
-                Text(text = "Log Out")
-            }
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        var signOutDialogOpened by remember  {
+            mutableStateOf(false)
         }
+        HomeScreen (
+            onMenuClicked = {
+                scope.launch {
+                    drawerState.open()
+                }
+            },
+            navigateToWrite = navigateToWrite,
+            drawerState = drawerState,
+            onSignOutClicked = {
+                signOutDialogOpened = true
+            }
+        )
+
+        DisplayAlertDialog(
+            title = "Sign Out",
+            message = "Do you really want to sign out from your Google account?",
+            dialogOpened = signOutDialogOpened,
+            onDialogClosed = {
+                signOutDialogOpened = false
+            },
+            onYesClicked = {
+                scope.launch (Dispatchers.IO) {
+                    withContext(Dispatchers.Main){
+                        navigateToAuth()
+                    }
+                    val user = App.create(appId = APP_ID).currentUser
+                    if(user != null){
+                        user.logOut()
+                    }
+                }
+            }
+        )
     }
 }
 
