@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 
@@ -13,10 +14,12 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.niraj.dailydiary.data.repository.MongoDB
 import com.niraj.dailydiary.presentation.components.DisplayAlertDialog
 import com.niraj.dailydiary.presentation.screens.auth.AuthenticationScreen
 import com.niraj.dailydiary.presentation.screens.auth.AuthenticationViewModel
 import com.niraj.dailydiary.presentation.screens.home.HomeScreen
+import com.niraj.dailydiary.presentation.screens.home.HomeViewModel
 import com.niraj.dailydiary.utils.Constants.APP_ID
 import com.niraj.dailydiary.utils.Constants.WRITE_SCREEN_ARGUMENT_KEY
 import com.stevdzasan.messagebar.rememberMessageBarState
@@ -97,12 +100,15 @@ fun NavGraphBuilder.homeRoute(
     navigateToAuth : () -> Unit
 ){
     composable(route = Screen.Home.route){
+        val viewModel: HomeViewModel = viewModel()
+        val diaries by viewModel.diaries
         val scope = rememberCoroutineScope()
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         var signOutDialogOpened by remember  {
             mutableStateOf(false)
         }
         HomeScreen (
+            diaries = diaries,
             onMenuClicked = {
                 scope.launch {
                     drawerState.open()
@@ -114,6 +120,9 @@ fun NavGraphBuilder.homeRoute(
                 signOutDialogOpened = true
             }
         )
+        LaunchedEffect(key1 = Unit){
+            MongoDB.configureTheRealm()
+        }
 
         DisplayAlertDialog(
             title = "Sign Out",
