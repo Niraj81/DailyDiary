@@ -15,11 +15,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.niraj.dailydiary.data.repository.MongoDB
+import com.niraj.dailydiary.model.diary.Diary
 import com.niraj.dailydiary.presentation.components.DisplayAlertDialog
 import com.niraj.dailydiary.presentation.screens.auth.AuthenticationScreen
 import com.niraj.dailydiary.presentation.screens.auth.AuthenticationViewModel
 import com.niraj.dailydiary.presentation.screens.home.HomeScreen
 import com.niraj.dailydiary.presentation.screens.home.HomeViewModel
+import com.niraj.dailydiary.presentation.screens.write.WriteScreen
 import com.niraj.dailydiary.utils.Constants.APP_ID
 import com.niraj.dailydiary.utils.Constants.WRITE_SCREEN_ARGUMENT_KEY
 import com.stevdzasan.messagebar.rememberMessageBarState
@@ -48,7 +50,9 @@ fun SetupNavGraph(startDestination : String, navController: NavHostController){
                 navController.navigate(Screen.Authentication.route)
             }
         )
-        writeRoute()
+        writeRoute(onBackPressed = {
+            navController.popBackStack()
+        })
     }
 }
 
@@ -146,7 +150,7 @@ fun NavGraphBuilder.homeRoute(
     }
 }
 
-fun NavGraphBuilder.writeRoute(){
+fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
     composable(
         route = Screen.Write.route,
         arguments = listOf(navArgument(name = WRITE_SCREEN_ARGUMENT_KEY){
@@ -155,6 +159,13 @@ fun NavGraphBuilder.writeRoute(){
             defaultValue = null
         })
     ){
-
+        WriteScreen(
+            selectedDiary = Diary().apply {
+                title = "Title"
+                description = "Some random"
+            },
+            onDeleteConfirmed = {},
+            onBackPressed = onBackPressed
+        )
     }
 }
