@@ -26,7 +26,8 @@ fun HomeScreen(
     drawerState: DrawerState,
     onMenuClicked: () -> Unit,
     navigateToWrite : () -> Unit,
-    onSignOutClicked: () -> Unit
+    onSignOutClicked: () -> Unit,
+    navigateToWriteWithArgs : (String) -> Unit
 ){
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     NavigationDrawer(
@@ -51,7 +52,11 @@ fun HomeScreen(
         ) {
             when (diaries){
                 is RequestState.Success -> {
-                    HomeContent(paddingValues = it, diaryNotes = diaries.data, onClick = {})
+                    HomeContent(
+                        paddingValues = it,
+                        diaryNotes = diaries.data,
+                        onClick = navigateToWriteWithArgs
+                    )
                 }
                 is RequestState.Error -> {
                     EmptyPage(

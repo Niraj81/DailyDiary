@@ -1,11 +1,13 @@
 package com.niraj.dailydiary.model.diary
 
+import com.niraj.dailydiary.utils.toRealmInstant
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.ObjectId
 import io.realm.kotlin.types.RealmInstant
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
+import java.time.Instant
 
 open class Diary : RealmObject {
     @PrimaryKey
@@ -17,5 +19,5 @@ open class Diary : RealmObject {
     var images: RealmList<String> = realmListOf()
 
     // Auto generated
-    var date: RealmInstant = RealmInstant.from(System.currentTimeMillis(), 0)
+    var date: RealmInstant = Instant.now().toRealmInstant()
 }

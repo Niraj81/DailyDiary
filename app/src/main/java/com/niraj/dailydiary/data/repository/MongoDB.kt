@@ -9,6 +9,7 @@ import io.realm.kotlin.ext.query
 import io.realm.kotlin.log.LogLevel
 import io.realm.kotlin.mongodb.App
 import io.realm.kotlin.mongodb.sync.SyncConfiguration
+import io.realm.kotlin.types.ObjectId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -70,6 +71,37 @@ object MongoDB : MongoRepository {
 
     }
 
+    override fun getSelectedDiary(diaryId: ObjectId): RequestState<Diary> {
+        return if(user != null){
+            try {
+                val diary = realm.query<Diary>(query = "_id == $0", diaryId).find().first()
+                RequestState.Success(data = diary)
+            } catch (e : Exception) {
+                RequestState.Error(e)
+            }
+        }else{
+            RequestState.Error(UserNotAuthenticatedException())
+        }
+    }
+
+    override suspend fun addNewDiary(diary: Diary): RequestState<Diary> {
+        return if(user != null){
+            realm.write {
+                try {
+                    val addedDiary = copyToRealm(
+                        diary.apply {
+                            ownerId = user.identity
+                        }
+                    )
+                    RequestState.Success(data = diary)
+                } catch (e : Exception) {
+                    RequestState.Error(e)
+                }
+            }
+        }else{
+            RequestState.Error(UserNotAuthenticatedException())
+        }
+    }
 }
 
 private class UserNotAuthenticatedException : Exception("User is not logged in.")

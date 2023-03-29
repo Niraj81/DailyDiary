@@ -1,11 +1,7 @@
 package com.niraj.dailydiary.navigation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 
@@ -14,14 +10,18 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.rememberPagerState
 import com.niraj.dailydiary.data.repository.MongoDB
 import com.niraj.dailydiary.model.diary.Diary
+import com.niraj.dailydiary.model.diary.Mood
 import com.niraj.dailydiary.presentation.components.DisplayAlertDialog
 import com.niraj.dailydiary.presentation.screens.auth.AuthenticationScreen
 import com.niraj.dailydiary.presentation.screens.auth.AuthenticationViewModel
 import com.niraj.dailydiary.presentation.screens.home.HomeScreen
 import com.niraj.dailydiary.presentation.screens.home.HomeViewModel
 import com.niraj.dailydiary.presentation.screens.write.WriteScreen
+import com.niraj.dailydiary.presentation.screens.write.WriteViewModel
 import com.niraj.dailydiary.utils.Constants.APP_ID
 import com.niraj.dailydiary.utils.Constants.WRITE_SCREEN_ARGUMENT_KEY
 import com.stevdzasan.messagebar.rememberMessageBarState
@@ -48,6 +48,9 @@ fun SetupNavGraph(startDestination : String, navController: NavHostController){
             navigateToAuth = {
                 navController.popBackStack()
                 navController.navigate(Screen.Authentication.route)
+            },
+            navigateToWriteWithArgs = {
+                navController.navigate(Screen.Write.passDiaryId(diaryId = it))
             }
         )
         writeRoute(onBackPressed = {
@@ -101,7 +104,8 @@ fun NavGraphBuilder.authenticationRoute(
 
 fun NavGraphBuilder.homeRoute(
     navigateToWrite : () -> Unit,
-    navigateToAuth : () -> Unit
+    navigateToAuth : () -> Unit,
+    navigateToWriteWithArgs : (String) -> Unit
 ){
     composable(route = Screen.Home.route){
         val viewModel: HomeViewModel = viewModel()
@@ -122,7 +126,8 @@ fun NavGraphBuilder.homeRoute(
             drawerState = drawerState,
             onSignOutClicked = {
                 signOutDialogOpened = true
-            }
+            },
+            navigateToWriteWithArgs = navigateToWriteWithArgs
         )
         LaunchedEffect(key1 = Unit){
             MongoDB.configureTheRealm()
@@ -150,6 +155,7 @@ fun NavGraphBuilder.homeRoute(
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
     composable(
         route = Screen.Write.route,
@@ -159,13 +165,39 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
             defaultValue = null
         })
     ){
+        val viewModel: WriteViewModel = viewModel()
+        val uiState = viewModel.uiState
+        val pagerState = rememberPagerState()
+        val pageNumber by remember {
+            derivedStateOf {
+                pagerState.currentPage
+            }
+        }
         WriteScreen(
-            selectedDiary = Diary().apply {
-                title = "Title"
-                description = "Some random"
+            uiState = uiState,
+            pagerState = pagerState,
+            moodName = {
+                Mood.values()[pageNumber].name
             },
             onDeleteConfirmed = {},
-            onBackPressed = onBackPressed
+            onBackPressed = onBackPressed,
+            onTitleChanged = {
+                viewModel.setTitle(it)
+            },
+            onDescriptionChanged = {
+                viewModel.setDescription(it)
+            },
+            onSaveClicked = {
+                viewModel.insertDiary(
+                    it.apply { mood = Mood.values()[pageNumber].name },
+                    onSuccess = {
+                        onBackPressed()
+                    },
+                    onError = {
+
+                    }
+                )
+            }
         )
     }
 }
