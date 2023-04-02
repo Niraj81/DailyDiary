@@ -15,7 +15,7 @@ import com.niraj.dailydiary.model.diary.Mood
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
 fun WriteScreen(
-    uiState: MutableState<UiState>,
+    uiState: UiState,
     pagerState: PagerState,
     moodName: () -> String,
     onTitleChanged: (String) -> Unit,
@@ -24,14 +24,14 @@ fun WriteScreen(
     onBackPressed: () -> Unit,
     onSaveClicked : (Diary) -> Unit
 ) {
-    LaunchedEffect(key1 = uiState.value.mood){
-        pagerState.scrollToPage(Mood.valueOf(uiState.value.mood.name).ordinal)
+    LaunchedEffect(key1 = uiState.mood){
+        pagerState.scrollToPage(Mood.valueOf(uiState.mood.name).ordinal)
     }
     Scaffold(
         topBar = {
             WriteTopBar(
                 moodName = moodName,
-                selectedDiary = uiState.value.selectedDiary,
+                selectedDiary = uiState.selectedDiary,
                 onDeleteConfirmed = onDeleteConfirmed,
                 onBackPressed = onBackPressed
             )
@@ -41,9 +41,9 @@ fun WriteScreen(
                 uiState = uiState,
                 paddingValues = it,
                 pagerState = pagerState,
-                title = uiState.value.title,
+                title = uiState.title,
                 onTitleChanged = onTitleChanged,
-                description = uiState.value.description,
+                description = uiState.description,
                 onDescriptionChanged = onDescriptionChanged,
                 onSaveClicked = onSaveClicked
             )

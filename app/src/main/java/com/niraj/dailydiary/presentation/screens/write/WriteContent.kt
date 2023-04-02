@@ -26,7 +26,7 @@ import com.niraj.dailydiary.model.diary.Mood
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun WriteContent(
-    uiState: MutableState<UiState>,
+    uiState: UiState,
     paddingValues: PaddingValues,
     pagerState: PagerState,
     title: String,
@@ -76,8 +76,9 @@ fun WriteContent(
                     focusedIndicatorColor = Color.Unspecified,
                     disabledIndicatorColor = Color.Unspecified,
                     unfocusedIndicatorColor = Color.Unspecified,
-                    placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 ),
+
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next
                 ),
@@ -98,7 +99,7 @@ fun WriteContent(
                     focusedIndicatorColor = Color.Unspecified,
                     disabledIndicatorColor = Color.Unspecified,
                     unfocusedIndicatorColor = Color.Unspecified,
-                    placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 ),
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Next
@@ -115,11 +116,11 @@ fun WriteContent(
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = {
-                    if(uiState.value.title.isNotEmpty() && uiState.value.description.isNotEmpty()){
+                    if(uiState.title.isNotEmpty() && uiState.description.isNotEmpty()){
                         onSaveClicked(
                             Diary().apply {
-                                this.title = uiState.value.title
-                                this.description = uiState.value.description
+                                this.title = uiState.title
+                                this.description = uiState.description
                             }
                         )
                     }else{

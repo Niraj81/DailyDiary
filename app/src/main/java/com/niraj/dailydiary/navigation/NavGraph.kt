@@ -1,5 +1,8 @@
 package com.niraj.dailydiary.navigation
 
+import android.util.Log
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -10,6 +13,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import coil.compose.AsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.rememberPagerState
 import com.niraj.dailydiary.data.repository.MongoDB
@@ -129,6 +133,7 @@ fun NavGraphBuilder.homeRoute(
             },
             navigateToWriteWithArgs = navigateToWriteWithArgs
         )
+
         LaunchedEffect(key1 = Unit){
             MongoDB.configureTheRealm()
         }
@@ -182,6 +187,7 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
             onDeleteConfirmed = {},
             onBackPressed = onBackPressed,
             onTitleChanged = {
+                Log.d("TAG", "Called")
                 viewModel.setTitle(it)
             },
             onDescriptionChanged = {
@@ -194,7 +200,7 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
                         onBackPressed()
                     },
                     onError = {
-
+                        Log.d("ERR", it)
                     }
                 )
             }

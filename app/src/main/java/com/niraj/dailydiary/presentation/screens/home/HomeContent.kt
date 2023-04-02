@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.niraj.dailydiary.model.diary.Diary
 import com.niraj.dailydiary.presentation.components.DiaryHolder
 import java.time.LocalDate
@@ -25,26 +26,32 @@ fun HomeContent(
     onClick: (String) -> Unit
 ) {
     if (diaryNotes.isNotEmpty()) {
-        LazyColumn(
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .navigationBarsPadding()
-                .padding(top = paddingValues.calculateTopPadding())
-        ) {
-            diaryNotes.forEach { (localDate, diaries) ->
-                stickyHeader(key = localDate) {
-                    DateHeader(localDate = localDate)
-                }
-                items(
-                    items = diaries,
-                    key = { it._id.toString() }
-                ) {
-                    DiaryHolder(diary = it, onClick = onClick)
+        Column {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .navigationBarsPadding()
+                    .padding(top = paddingValues.calculateTopPadding())
+            ) {
+                diaryNotes.forEach { (localDate, diaries) ->
+                    stickyHeader(key = localDate) {
+                        DateHeader(localDate = localDate)
+                    }
+                    items(
+                        items = diaries,
+                        key = { it._id.toString() }
+                    ) {
+                        DiaryHolder(diary = it, onClick = onClick)
+                    }
                 }
             }
         }
     } else {
-        EmptyPage()
+        Column(verticalArrangement = Arrangement.Center) {
+            EmptyPage()
+
+            Spacer(modifier = Modifier.height(30.dp))
+        }
     }
 }
 @Composable
