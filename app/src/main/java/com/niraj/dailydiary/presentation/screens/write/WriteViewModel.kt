@@ -36,6 +36,7 @@ class WriteViewModel(
                 key = WRITE_SCREEN_ARGUMENT_KEY
             )
         )
+        Log.d("ID", uiState.selectedDiaryId.toString())
     }
 
     private fun fetchSelectedDiary() {
@@ -59,13 +60,25 @@ class WriteViewModel(
         }
     }
 
-    fun insertDiary(
+    fun upsertDiary(
         diary: Diary,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val result = MongoDB.addNewDiary(diary = diary)
+        viewModelScope.launch (Dispatchers.Main){
+            if(uiState.selectedDiaryId != null){
+                updateDiary(diary, onSuccess, onError)
+            }else{
+                insertDiary(diary, onSuccess, onError)
+            }
+        }
+    }
+    suspend fun insertDiary(
+        diary: Diary,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+            val result = MongoDB.insertDiary(diary = diary)
             if(result is RequestState.Success){
                 withContext(Dispatchers.Main){
                     onSuccess()
@@ -76,8 +89,28 @@ class WriteViewModel(
                 }
             }
 
+    }
+
+    suspend fun updateDiary(
+        diary: Diary,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val result = MongoDB.updateDiary(diary.apply {
+            _id = ObjectId.invoke(uiState.selectedDiaryId!!)
+            date = uiState.selectedDiary!!.date
+        })
+        if(result is RequestState.Success){
+            withContext(Dispatchers.Main){
+                onSuccess()
+            }
+        }else if(result is RequestState.Error){
+            withContext(Dispatchers.Main){
+                onError(result.error.message.toString())
+            }
         }
     }
+
     private fun setSelectedDiary(diary: Diary) {
         uiState = uiState.copy(selectedDiary = diary)
     }

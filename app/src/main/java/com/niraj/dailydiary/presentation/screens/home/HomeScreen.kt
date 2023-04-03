@@ -73,10 +73,9 @@ fun HomeScreen(
                     }
                 }
                 else -> {
-
+                    HomeContent(paddingValues = it, diaryNotes = mapOf(), onClick = {})
                 }
             }
-            HomeContent(paddingValues = it, diaryNotes = mapOf(), onClick = {})
         }
     }
 }

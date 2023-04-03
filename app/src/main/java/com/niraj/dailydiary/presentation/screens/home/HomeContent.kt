@@ -47,11 +47,7 @@ fun HomeContent(
             }
         }
     } else {
-        Column(verticalArrangement = Arrangement.Center) {
-            EmptyPage()
-
-            Spacer(modifier = Modifier.height(30.dp))
-        }
+        EmptyPage()
     }
 }
 @Composable
