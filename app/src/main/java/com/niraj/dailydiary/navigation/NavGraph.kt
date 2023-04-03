@@ -1,10 +1,12 @@
 package com.niraj.dailydiary.navigation
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 
@@ -147,13 +149,10 @@ fun NavGraphBuilder.homeRoute(
             },
             onYesClicked = {
                 scope.launch (Dispatchers.IO) {
-                    withContext(Dispatchers.Main){
+                    withContext(Dispatchers.Main) {
                         navigateToAuth()
                     }
-                    val user = App.create(appId = APP_ID).currentUser
-                    if(user != null){
-                        user.logOut()
-                    }
+                    App.create(appId = APP_ID).currentUser?.logOut()
                 }
             }
         )
@@ -172,6 +171,7 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
     ){
         val viewModel: WriteViewModel = viewModel()
         val uiState = viewModel.uiState
+        val context = LocalContext.current
         val pagerState = rememberPagerState()
         val pageNumber by remember {
             derivedStateOf {
@@ -184,7 +184,25 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
             moodName = {
                 Mood.values()[pageNumber].name
             },
-            onDeleteConfirmed = {},
+            onDeleteConfirmed = {
+                viewModel.deleteDiary(
+                    onSuccess = {
+                        Toast.makeText(
+                            context,
+                            "Diary deleted Successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        onBackPressed()
+                    },
+                    onError = { error ->
+                        Toast.makeText(
+                            context,
+                            error,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                )
+            },
             onBackPressed = onBackPressed,
             onTitleChanged = {
                 Log.d("TAG", "Called")
@@ -199,10 +217,17 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
                     onSuccess = {
                         onBackPressed()
                     },
-                    onError = {
-                        Log.d("ERR", it)
+                    onError = { error ->
+                        Toast.makeText(
+                            context,
+                            error,
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 )
+            },
+            onDateTimeUpdated = {
+                viewModel.updateDateTime(zonedDateTime = it)
             }
         )
     }

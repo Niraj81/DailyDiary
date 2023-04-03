@@ -113,6 +113,7 @@ object MongoDB : MongoRepository {
                     queriedDiary.description = diary.description
                     queriedDiary.mood = diary.mood
                     queriedDiary.images = diary.images
+                    queriedDiary.date = diary.date
                     RequestState.Success(data = queriedDiary)
                 }else{
                     RequestState.Error(error = Exception("Queried Diary does not exist."))
@@ -120,6 +121,27 @@ object MongoDB : MongoRepository {
             }
         }else{
              RequestState.Error(UserNotAuthenticatedException())
+        }
+    }
+
+    override suspend fun deletediary(id: ObjectId): RequestState<Diary> {
+        return if(user != null){
+            realm.write {
+                val diary = query<Diary>(query = "_id == $0 AND ownerId == $1", id, user.id)
+                    .first().find()
+                if(diary != null){
+                    try {
+                        delete(diary)
+                        RequestState.Success(data = diary)
+                    } catch (e : Exception){
+                        RequestState.Error(e)
+                    }
+                } else {
+                    RequestState.Error(Exception("Diary does not exist."))
+                }
+            }
+        }else{
+            RequestState.Error(UserNotAuthenticatedException())
         }
     }
 }

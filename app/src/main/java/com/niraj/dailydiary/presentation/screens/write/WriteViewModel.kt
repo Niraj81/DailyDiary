@@ -17,6 +17,10 @@ import kotlinx.coroutines.withContext
 import org.mongodb.kbson.ObjectId
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.niraj.dailydiary.utils.toRealmInstant
+import io.realm.kotlin.types.RealmInstant
+import java.time.ZonedDateTime
+import java.time.chrono.ChronoZonedDateTime
 
 class WriteViewModel(
     private val savedStateHandle: SavedStateHandle
@@ -78,7 +82,11 @@ class WriteViewModel(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-            val result = MongoDB.insertDiary(diary = diary)
+            val result = MongoDB.insertDiary(diary = diary.apply {
+                if(uiState.updatedDateTime != null){
+                    date = uiState.updatedDateTime!!
+                }
+            })
             if(result is RequestState.Success){
                 withContext(Dispatchers.Main){
                     onSuccess()
@@ -98,7 +106,11 @@ class WriteViewModel(
     ) {
         val result = MongoDB.updateDiary(diary.apply {
             _id = ObjectId.invoke(uiState.selectedDiaryId!!)
-            date = uiState.selectedDiary!!.date
+            date = if(uiState.updatedDateTime != null){
+                 uiState.updatedDateTime!!
+            }else{
+                uiState.selectedDiary!!.date
+            }
         })
         if(result is RequestState.Success){
             withContext(Dispatchers.Main){
@@ -107,6 +119,29 @@ class WriteViewModel(
         }else if(result is RequestState.Error){
             withContext(Dispatchers.Main){
                 onError(result.error.message.toString())
+            }
+        }
+    }
+
+    fun deleteDiary(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ){
+        viewModelScope.launch (Dispatchers.IO){
+            if(uiState.selectedDiaryId != null){
+                when(val result = MongoDB.deletediary(ObjectId.invoke(uiState.selectedDiaryId!!))) {
+                    is RequestState.Success -> {
+                        withContext(Dispatchers.Main) {
+                            onSuccess()
+                        }
+                    }
+                    is RequestState.Error -> {
+                        withContext(Dispatchers.Main){
+                            onError(result.error.message.toString())
+                        }
+                    }
+                    else -> {}
+                }
             }
         }
     }
@@ -126,6 +161,14 @@ class WriteViewModel(
         uiState = uiState.copy(mood = mood)
     }
 
+    fun updateDateTime(zonedDateTime: ZonedDateTime?){
+        uiState = if(zonedDateTime != null){
+            uiState.copy(updatedDateTime = zonedDateTime.toInstant().toRealmInstant())
+        }else{
+            uiState.copy(updatedDateTime = null)
+        }
+    }
+
 }
 
 data class UiState(
@@ -133,5 +176,6 @@ data class UiState(
     var selectedDiary: Diary? = null,
     var title: String = "",
     var description: String = "",
-    var mood: Mood = Mood.Neutral
+    var mood: Mood = Mood.Neutral,
+    var updatedDateTime : RealmInstant? = null
 )
