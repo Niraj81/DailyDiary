@@ -15,12 +15,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import coil.compose.AsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.rememberPagerState
 import com.niraj.dailydiary.data.repository.MongoDB
 import com.niraj.dailydiary.model.GalleryImage
-import com.niraj.dailydiary.model.diary.Diary
 import com.niraj.dailydiary.model.diary.Mood
 import com.niraj.dailydiary.model.rememberGalleryState
 import com.niraj.dailydiary.presentation.components.DisplayAlertDialog
@@ -88,7 +86,7 @@ fun NavGraphBuilder.authenticationRoute(
                 oneTapSignInState.open()
                 viewModel.setLoading(true)
             },
-            onTokenReceived = {tokenId ->
+            onSuccessfulFirebaseSignIn = { tokenId ->
                 viewModel.signInWithMongoAtlas(
                     tokenId = tokenId,
                     onSuccess = {
@@ -101,7 +99,11 @@ fun NavGraphBuilder.authenticationRoute(
                     }
                 )
             },
-            onDialogDismised = {message ->
+            onFailedFirebaseSignIn = { e ->
+                messageBarState.addError(e)
+                viewModel.setLoading(false)
+            },
+            onDialogDismissed = { message ->
                 messageBarState.addError(Exception(message))
                 viewModel.setLoading(false)
             },

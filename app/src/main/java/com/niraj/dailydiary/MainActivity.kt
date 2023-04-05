@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.FirebaseApp
 import com.niraj.dailydiary.navigation.Screen
 import com.niraj.dailydiary.navigation.SetupNavGraph
 import com.niraj.dailydiary.ui.theme.DailyDiaryTheme
@@ -20,6 +21,7 @@ import io.realm.kotlin.mongodb.App
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         setContent {
             DailyDiaryTheme {
                 val navController = rememberNavController()
@@ -33,7 +35,7 @@ class MainActivity : ComponentActivity() {
 }
 
 private fun getStartDestination() : String {
-    val user = App.create(APP_ID).currentUser
+    val user = App.create(appId =  APP_ID).currentUser
     if(user != null && user.loggedIn) return Screen.Home.route
     else return Screen.Authentication.route
 }
