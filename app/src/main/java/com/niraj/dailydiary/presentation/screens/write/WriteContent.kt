@@ -1,5 +1,6 @@
 package com.niraj.dailydiary.presentation.screens.write
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,8 +24,10 @@ import coil.request.ImageRequest
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
+import com.niraj.dailydiary.model.GalleryState
 import com.niraj.dailydiary.model.diary.Diary
 import com.niraj.dailydiary.model.diary.Mood
+import com.niraj.dailydiary.presentation.components.GalleryUploader
 import kotlinx.coroutines.launch
 
 
@@ -35,10 +38,12 @@ fun WriteContent(
     paddingValues: PaddingValues,
     pagerState: PagerState,
     title: String,
+    galleryState: GalleryState,
     onTitleChanged: (String) -> Unit,
     description: String,
     onDescriptionChanged: (String) -> Unit,
-    onSaveClicked : (Diary) -> Unit
+    onSaveClicked : (Diary) -> Unit,
+    onImageSelect: (Uri) -> Unit
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
@@ -132,6 +137,13 @@ fun WriteContent(
         Column(
             verticalArrangement = Arrangement.Bottom
         ) {
+            Spacer(modifier = Modifier.height(12.dp))
+            GalleryUploader(
+                galleryState = galleryState,
+                onAddClicked = { /*TODO*/ },
+                onImageSelect = onImageSelect,
+                onImageClicked = {}
+            )
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = {

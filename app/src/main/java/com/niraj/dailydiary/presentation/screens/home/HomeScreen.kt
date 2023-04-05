@@ -1,7 +1,6 @@
 package com.niraj.dailydiary.presentation.screens.home
 
 import android.annotation.SuppressLint
-import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -16,7 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.niraj.dailydiary.R
 import com.niraj.dailydiary.data.repository.Diaries
-import com.niraj.dailydiary.utils.RequestState
+import com.niraj.dailydiary.model.RequestState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)

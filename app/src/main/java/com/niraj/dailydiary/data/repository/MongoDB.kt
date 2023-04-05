@@ -3,22 +3,19 @@ package com.niraj.dailydiary.data.repository
 import android.util.Log
 import com.niraj.dailydiary.model.diary.Diary
 import com.niraj.dailydiary.utils.Constants.APP_ID
-import com.niraj.dailydiary.utils.RequestState
+import com.niraj.dailydiary.model.RequestState
 import com.niraj.dailydiary.utils.toInstant
 import io.realm.kotlin.Realm
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.log.LogLevel
 import io.realm.kotlin.mongodb.App
-import io.realm.kotlin.mongodb.subscriptions
 import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import org.mongodb.kbson.ObjectId
-import java.net.UnknownServiceException
 import java.time.ZoneId
-import java.util.logging.Level
 
 object MongoDB : MongoRepository {
     private val app = App.Companion.create(APP_ID)

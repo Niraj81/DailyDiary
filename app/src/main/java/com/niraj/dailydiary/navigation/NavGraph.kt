@@ -19,8 +19,10 @@ import coil.compose.AsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.rememberPagerState
 import com.niraj.dailydiary.data.repository.MongoDB
+import com.niraj.dailydiary.model.GalleryImage
 import com.niraj.dailydiary.model.diary.Diary
 import com.niraj.dailydiary.model.diary.Mood
+import com.niraj.dailydiary.model.rememberGalleryState
 import com.niraj.dailydiary.presentation.components.DisplayAlertDialog
 import com.niraj.dailydiary.presentation.screens.auth.AuthenticationScreen
 import com.niraj.dailydiary.presentation.screens.auth.AuthenticationViewModel
@@ -173,6 +175,7 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
         val uiState = viewModel.uiState
         val context = LocalContext.current
         val pagerState = rememberPagerState()
+        val galleryState = rememberGalleryState()
         val pageNumber by remember {
             derivedStateOf {
                 pagerState.currentPage
@@ -184,6 +187,7 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
             moodName = {
                 Mood.values()[pageNumber].name
             },
+            galleryState = galleryState,
             onDeleteConfirmed = {
                 viewModel.deleteDiary(
                     onSuccess = {
@@ -228,6 +232,11 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
             },
             onDateTimeUpdated = {
                 viewModel.updateDateTime(zonedDateTime = it)
+            },
+            onImageSelect = {
+                galleryState.addImage(
+                    GalleryImage(image = it, remoteImagePath = "")
+                )
             }
         )
     }

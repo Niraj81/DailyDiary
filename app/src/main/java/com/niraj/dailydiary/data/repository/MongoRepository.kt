@@ -1,7 +1,7 @@
 package com.niraj.dailydiary.data.repository
 
 import com.niraj.dailydiary.model.diary.Diary
-import com.niraj.dailydiary.utils.RequestState
+import com.niraj.dailydiary.model.RequestState
 import kotlinx.coroutines.flow.Flow
 import org.mongodb.kbson.ObjectId
 import java.time.LocalDate

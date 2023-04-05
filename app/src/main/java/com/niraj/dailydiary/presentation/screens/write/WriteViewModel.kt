@@ -9,7 +9,7 @@ import com.niraj.dailydiary.data.repository.MongoDB
 import com.niraj.dailydiary.model.diary.Diary
 import com.niraj.dailydiary.model.diary.Mood
 import com.niraj.dailydiary.utils.Constants.WRITE_SCREEN_ARGUMENT_KEY
-import com.niraj.dailydiary.utils.RequestState
+import com.niraj.dailydiary.model.RequestState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
@@ -20,7 +20,6 @@ import androidx.compose.runtime.setValue
 import com.niraj.dailydiary.utils.toRealmInstant
 import io.realm.kotlin.types.RealmInstant
 import java.time.ZonedDateTime
-import java.time.chrono.ChronoZonedDateTime
 
 class WriteViewModel(
     private val savedStateHandle: SavedStateHandle
