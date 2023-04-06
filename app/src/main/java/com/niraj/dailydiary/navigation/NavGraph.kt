@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 
@@ -173,11 +174,11 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
             defaultValue = null
         })
     ){
-        val viewModel: WriteViewModel = viewModel()
+        val viewModel: WriteViewModel = hiltViewModel()
         val uiState = viewModel.uiState
         val context = LocalContext.current
         val pagerState = rememberPagerState()
-        val galleryState = rememberGalleryState()
+        val galleryState = viewModel.galleryState
         val pageNumber by remember {
             derivedStateOf {
                 pagerState.currentPage
@@ -236,10 +237,10 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit){
                 viewModel.updateDateTime(zonedDateTime = it)
             },
             onImageSelect = {
-                galleryState.addImage(
-                    GalleryImage(image = it, remoteImagePath = "")
-                )
-            }
+                val type = context.contentResolver.getType(it)?.split("/")?.last() ?: "jpg"
+                viewModel.addImage(image = it, imageType = type)
+            },
+            onImageDeleteClicked = {}
         )
     }
 }

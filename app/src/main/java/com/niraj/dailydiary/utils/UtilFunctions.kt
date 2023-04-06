@@ -1,7 +1,37 @@
 package com.niraj.dailydiary.utils
 
+import android.net.Uri
+import android.util.Log
+import androidx.core.net.toUri
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.ktx.storageMetadata
+import com.niraj.dailydiary.data.database.entity.ImageToUpload
 import io.realm.kotlin.types.RealmInstant
 import java.time.Instant
+
+fun fetchImagesFromFirebase(
+    remoteImagePaths: List<String>,
+    onImageDownload: (Uri) -> Unit,
+    onImageDownloadFailed: (Exception) -> Unit = {},
+    onReadyToDisplay: () -> Unit = {}
+) {
+    if (remoteImagePaths.isNotEmpty()) {
+        remoteImagePaths.forEachIndexed { index, remoteImagePath ->
+            if (remoteImagePath.trim().isNotEmpty()) {
+                FirebaseStorage.getInstance().reference.child(remoteImagePath.trim()).downloadUrl
+                    .addOnSuccessListener {
+                        Log.d("DownloadURL", "$it")
+                        onImageDownload(it)
+                        if (remoteImagePaths.lastIndexOf(remoteImagePaths.last()) == index) {
+                            onReadyToDisplay()
+                        }
+                    }.addOnFailureListener {
+                        onImageDownloadFailed(it)
+                    }
+            }
+        }
+    }
+}
 
 fun RealmInstant.toInstant() : Instant {
     val sec: Long = this.epochSeconds
@@ -12,6 +42,18 @@ fun RealmInstant.toInstant() : Instant {
     else{
         Instant.ofEpochSecond(sec - 1, 1_000_000 + nano.toLong())
     }
+}
+
+fun retryUploadingImageToFirebase(
+    imageToUpload: ImageToUpload,
+    onSuccess: () -> Unit
+){
+    val storage = FirebaseStorage.getInstance().reference
+    storage.child(imageToUpload.remoteImagePath).putFile(
+        imageToUpload.imageUri.toUri(),
+        storageMetadata {  },
+        imageToUpload.sessionUri.toUri()
+    ).addOnSuccessListener { onSuccess() }
 }
 
 fun Instant.toRealmInstant() : RealmInstant {
