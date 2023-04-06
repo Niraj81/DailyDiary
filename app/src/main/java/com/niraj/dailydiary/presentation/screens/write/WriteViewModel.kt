@@ -22,7 +22,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import com.niraj.dailydiary.data.database.ImageToDeleteDao
 import com.niraj.dailydiary.data.database.ImageToUploadDao
+import com.niraj.dailydiary.data.database.entity.ImageToDelete
 import com.niraj.dailydiary.data.database.entity.ImageToUpload
 import com.niraj.dailydiary.model.GalleryImage
 import com.niraj.dailydiary.model.GalleryState
@@ -36,7 +38,8 @@ import javax.inject.Inject
 @HiltViewModel
 class WriteViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    val imageToUploadDao: ImageToUploadDao
+    val imageToUploadDao: ImageToUploadDao,
+    val imageToDeleteDao: ImageToDeleteDao
 ) : ViewModel() {
     var galleryState = GalleryState()
     var uiState by mutableStateOf(UiState())
@@ -117,6 +120,7 @@ class WriteViewModel @Inject constructor(
             })
             if(result is RequestState.Success){
                 withContext(Dispatchers.Main){
+                    uploadImageToFirebase()
                     onSuccess()
                 }
             } else if (result is RequestState.Error) {
@@ -141,6 +145,7 @@ class WriteViewModel @Inject constructor(
         })
         if(result is RequestState.Success){
             uploadImageToFirebase()
+            deleteImagesFromFirebase()
             withContext(Dispatchers.Main){
                 onSuccess()
             }
@@ -160,6 +165,7 @@ class WriteViewModel @Inject constructor(
                 when(val result = MongoDB.deletediary(ObjectId.invoke(uiState.selectedDiaryId!!))) {
                     is RequestState.Success -> {
                         withContext(Dispatchers.Main) {
+                            uiState.selectedDiary?.let { deleteImagesFromFirebase(it.images) }
                             onSuccess()
                         }
                     }
@@ -230,6 +236,32 @@ class WriteViewModel @Inject constructor(
         }
     }
 
+    private fun deleteImagesFromFirebase(images: List<String>? = null) {
+        val storage = FirebaseStorage.getInstance().reference
+        if(images != null){
+            images.forEach { remotePath ->
+                storage.child(remotePath).delete()
+                    .addOnFailureListener {
+                        viewModelScope.launch(Dispatchers.IO){
+                            imageToDeleteDao.addImageToDelete(
+                                ImageToDelete(remoteImagePath = remotePath)
+                            )
+                        }
+                    }
+            }
+        }else{
+             galleryState.imagesToBeDeleted.map { it.remoteImagePath}.forEach {remotePath ->
+                 storage.child(remotePath).delete()
+                     .addOnFailureListener {
+                         viewModelScope.launch(Dispatchers.IO){
+                             imageToDeleteDao.addImageToDelete(
+                                 ImageToDelete(remoteImagePath = remotePath)
+                             )
+                         }
+                     }
+             }
+        }
+    }
     private fun extractRemoteImagePath(fullImageUrl: String) : String {
         val chunks = fullImageUrl.split("%2F")
         val imageName = chunks[2].split("?").first()
