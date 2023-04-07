@@ -7,10 +7,10 @@ import com.niraj.dailydiary.data.database.entity.ImageToUpload
 
 @Database(
     entities = [ImageToUpload::class, ImageToDelete::class],
-    version = 2,
+    version = 1,
     exportSchema = false
 )
 abstract class ImagesDatabase: RoomDatabase(){
     abstract fun imageToUpload(): ImageToUploadDao
-    abstract fun imageToDelete(): ImageToUploadDao
+    abstract fun imageToDelete(): ImageToDeleteDao
 }

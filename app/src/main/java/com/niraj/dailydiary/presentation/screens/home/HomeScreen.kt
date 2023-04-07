@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 
@@ -26,12 +27,14 @@ fun HomeScreen(
     onMenuClicked: () -> Unit,
     navigateToWrite : () -> Unit,
     onSignOutClicked: () -> Unit,
+    onDeleteAllClicked: () -> Unit,
     navigateToWriteWithArgs : (String) -> Unit
 ){
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     NavigationDrawer(
         drawerState = drawerState,
-        onSignOutClicked = onSignOutClicked
+        onSignOutClicked = onSignOutClicked,
+        onDeleteAllClicked = onDeleteAllClicked
     ) {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -83,6 +86,7 @@ fun HomeScreen(
 fun NavigationDrawer(
     drawerState: DrawerState,
     onSignOutClicked: () -> Unit,
+    onDeleteAllClicked: () -> Unit,
     content : @Composable () -> Unit
 ){
     ModalNavigationDrawer(
@@ -104,6 +108,23 @@ fun NavigationDrawer(
                          selected = false,
                          onClick = {
                              onSignOutClicked ()
+                         }
+                     )
+                     NavigationDrawerItem(
+                         label = {
+                             Row( Modifier.padding(horizontal = 12.dp)){
+                                 Icon(
+                                     imageVector = Icons.Default.Delete,
+                                     tint = MaterialTheme.colorScheme.onSurface,
+                                     contentDescription = "Delete Icon"
+                                 )
+                                 Spacer(Modifier.width(12.dp))
+                                 Text(text = "Delete all diaries")
+                             }
+                         },
+                         selected = false,
+                         onClick = {
+                             onDeleteAllClicked()
                          }
                      )
                  }

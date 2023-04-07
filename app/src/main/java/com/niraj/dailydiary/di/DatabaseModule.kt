@@ -2,6 +2,7 @@ package com.niraj.dailydiary.di
 
 import android.content.Context
 import androidx.room.Room
+import com.niraj.dailydiary.connectivity.NetworkConnectivityObserver
 import com.niraj.dailydiary.data.database.ImagesDatabase
 import com.niraj.dailydiary.utils.Constants.IMAGES_DATABASE
 import dagger.Module
@@ -33,4 +34,10 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideSecondDao(database: ImagesDatabase) = database.imageToDelete()
+
+    @Singleton
+    @Provides
+    fun provideNetworkConnectivityObserver(
+        @ApplicationContext context: Context
+    ) = NetworkConnectivityObserver(context)
 }

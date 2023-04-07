@@ -1,7 +1,9 @@
 package com.niraj.dailydiary.navigation
 
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.material3.*
@@ -33,12 +35,14 @@ import com.niraj.dailydiary.utils.Constants.APP_ID
 import com.niraj.dailydiary.utils.Constants.WRITE_SCREEN_ARGUMENT_KEY
 import com.stevdzasan.messagebar.rememberMessageBarState
 import com.stevdzasan.onetap.rememberOneTapSignInState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.realm.kotlin.mongodb.App
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.Exception
 
+@RequiresApi(Build.VERSION_CODES.N)
 @Composable
 fun SetupNavGraph(startDestination : String, navController: NavHostController){
     NavHost(navController = navController, startDestination = startDestination){
@@ -113,17 +117,22 @@ fun NavGraphBuilder.authenticationRoute(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.N)
 fun NavGraphBuilder.homeRoute(
     navigateToWrite : () -> Unit,
     navigateToAuth : () -> Unit,
     navigateToWriteWithArgs : (String) -> Unit
 ){
     composable(route = Screen.Home.route){
-        val viewModel: HomeViewModel = viewModel()
+        val viewModel: HomeViewModel = hiltViewModel()
         val diaries by viewModel.diaries
         val scope = rememberCoroutineScope()
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         var signOutDialogOpened by remember  {
+            mutableStateOf(false)
+        }
+        val context = LocalContext.current
+        var deleteAllDialogOpened by remember  {
             mutableStateOf(false)
         }
         HomeScreen (
@@ -137,6 +146,9 @@ fun NavGraphBuilder.homeRoute(
             drawerState = drawerState,
             onSignOutClicked = {
                 signOutDialogOpened = true
+            },
+            onDeleteAllClicked = {
+                deleteAllDialogOpened = true
             },
             navigateToWriteWithArgs = navigateToWriteWithArgs
         )
@@ -159,6 +171,33 @@ fun NavGraphBuilder.homeRoute(
                     }
                     App.create(appId = APP_ID).currentUser?.logOut()
                 }
+            }
+        )
+        DisplayAlertDialog(
+            title = "Delete All Diaries",
+            message = "Are you sure you want to permanently delete all your diaries?",
+            dialogOpened = deleteAllDialogOpened,
+            onDialogClosed = {
+                deleteAllDialogOpened = false
+            },
+            onYesClicked = {
+                viewModel.deleteAllDiaries(
+                    onSuccess = {
+                        Toast.makeText(
+                            context,
+                            "All Diaries Deleted.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    onError = { error ->
+                        Toast.makeText(
+                            context,
+                            error.message ,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                )
+                scope.launch { drawerState.close() }
             }
         )
     }

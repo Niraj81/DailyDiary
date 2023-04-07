@@ -162,7 +162,7 @@ class WriteViewModel @Inject constructor(
     ){
         viewModelScope.launch (Dispatchers.IO){
             if(uiState.selectedDiaryId != null){
-                when(val result = MongoDB.deletediary(ObjectId.invoke(uiState.selectedDiaryId!!))) {
+                when(val result = MongoDB.deleteDiary(ObjectId.invoke(uiState.selectedDiaryId!!))) {
                     is RequestState.Success -> {
                         withContext(Dispatchers.Main) {
                             uiState.selectedDiary?.let { deleteImagesFromFirebase(it.images) }
