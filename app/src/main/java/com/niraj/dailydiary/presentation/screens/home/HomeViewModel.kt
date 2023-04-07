@@ -20,10 +20,9 @@ import com.niraj.dailydiary.data.repository.Diaries
 import com.niraj.dailydiary.data.repository.MongoDB
 import com.niraj.dailydiary.model.RequestState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.time.ZonedDateTime
 import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.N)
@@ -33,9 +32,13 @@ class HomeViewModel @Inject constructor(
     private val imageToDeleteDao: ImageToDeleteDao
 ): ViewModel() {
 
+    private lateinit var allDiariesJob: Job
+    private lateinit var filteredDiariesJob: Job
+
     private var network by mutableStateOf(ConnectivityObserver.Status.Unavailable)
     var diaries : MutableState<Diaries> = mutableStateOf(RequestState.Idle)
-
+    var dateIsSelected by mutableStateOf(false)
+    private set
     init {
         observeAllDiaries()
         viewModelScope.launch {
@@ -46,13 +49,34 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun observeAllDiaries() {
-        viewModelScope.launch {
+        allDiariesJob = viewModelScope.launch {
+            if(::filteredDiariesJob.isInitialized) filteredDiariesJob.cancelAndJoin()
             MongoDB.getAllDiaries().collect() { result ->
                 Log.d("RET", result.toString())
                 diaries.value = result
             }
         }
     }
+
+    private fun observeFilteredDiaries(zonedDateTime : ZonedDateTime){
+        filteredDiariesJob = viewModelScope.launch {
+            if(::allDiariesJob.isInitialized) allDiariesJob.cancelAndJoin()
+            MongoDB.getFilteredDiaries(zonedDateTime).collect() { result ->
+                diaries.value = result
+            }
+        }
+    }
+
+    fun getDiaries(zonedDateTime: ZonedDateTime ? = null) {
+        dateIsSelected = zonedDateTime != null
+        diaries.value = RequestState.Loading
+        if(dateIsSelected && zonedDateTime != null){
+            observeFilteredDiaries(zonedDateTime)
+        }else{
+            observeAllDiaries()
+        }
+    }
+
 
    fun deleteAllDiaries(
        onSuccess: () -> Unit,

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.niraj.dailydiary.R
 import com.niraj.dailydiary.data.repository.Diaries
 import com.niraj.dailydiary.model.RequestState
+import java.time.ZonedDateTime
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,7 +29,10 @@ fun HomeScreen(
     navigateToWrite : () -> Unit,
     onSignOutClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
-    navigateToWriteWithArgs : (String) -> Unit
+    navigateToWriteWithArgs : (String) -> Unit,
+    dateIsSelected: Boolean,
+    onDateSelected: (ZonedDateTime) -> Unit,
+    onDateReset: () -> Unit
 ){
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     NavigationDrawer(
@@ -41,7 +45,10 @@ fun HomeScreen(
             topBar = {
                 HomeTopBar (
                     scrollBehavior,
-                    onMenuClicked = onMenuClicked
+                    onMenuClicked = onMenuClicked,
+                    dateIsSelected = dateIsSelected,
+                    onDateSelected = onDateSelected,
+                    onDateReset = onDateReset
                 )
             },
             floatingActionButton = {
