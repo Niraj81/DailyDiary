@@ -10,7 +10,7 @@ The data is synced through the cloud and is synced across multiple devices if th
 ![Screenshot4][screenshot4] 
 ![Screenshot5][screenshot5] 
 ![Screenshot6][screenshot6] 
-![Screenshot7][screenshot7] 
+![Screenshot7][screenshot7]
 
 [screenshot1]: Media/screenshots/image.png
 [screenshot2]: Media/screenshots/image1.png
